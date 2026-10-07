@@ -1,0 +1,16 @@
+# Misc
+.DS_Store
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.build/
+.idea/
+.vscode/
+*.iml
+
+# Generated files
+*.log
+
+# Flutter build output
+build/

@@ -1,0 +1,7 @@
+# This is a generated file. Do not edit.
+# It's used by Flutter to store metadata for the app.
+
+version: 1
+
+flutter:
+  uses-material-design: true
