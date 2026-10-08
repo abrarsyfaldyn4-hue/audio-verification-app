@@ -9,7 +9,13 @@ workflows:
     scripts:
       - name: Create android folder and patch manifest
         script: |
-          flutter create . --platforms=android
+          mkdir -p /tmp/bak
+          cp -r lib /tmp/bak/lib
+          cp pubspec.yaml /tmp/bak/pubspec.yaml
+          rm -f .metadata
+          flutter create . --platforms=android --project-name audio_verification_app
+          cp -r /tmp/bak/lib/. lib/
+          cp /tmp/bak/pubspec.yaml pubspec.yaml
           python3 - <<'PY'
           import glob
           p = 'android/app/src/main/AndroidManifest.xml'
