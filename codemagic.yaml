@@ -12,6 +12,7 @@ workflows:
           mkdir -p /tmp/bak
           cp -r lib /tmp/bak/lib
           cp pubspec.yaml /tmp/bak/pubspec.yaml
+          rm -rf android
           rm -f .metadata
           flutter create . --platforms=android --project-name audio_verification_app
           cp -r /tmp/bak/lib/. lib/

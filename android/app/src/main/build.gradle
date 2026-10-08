@@ -1,7 +1,0 @@
-defaultConfig {
-    applicationId "com.example.audio_verification_app"
-    minSdkVersion 21
-    targetSdkVersion 34
-    versionCode 1
-    versionName "1.0.0"
-}
