@@ -7,24 +7,44 @@ workflows:
       flutter: stable
       java: 17
     scripts:
-      - name: Create android folder and patch manifest
+      - name: Ensure Flutter project structure
         script: |
-          flutter create . --platforms=android
+          if [ ! -f pubspec.yaml ]; then
+            echo "Missing pubspec.yaml at repository root" >&2
+            exit 1
+          fi
+
+          if [ ! -d android ]; then
+            echo "Android folder missing; creating Flutter Android platform..."
+            flutter create . --platforms=android --project-name audio_verification_app
+          fi
+
+          if [ ! -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "AndroidManifest.xml missing; recreating Android platform..."
+            flutter create . --platforms=android --overwrite --project-name audio_verification_app
+          fi
+
+      - name: Patch Android permissions
+        script: |
           python3 - <<'PY'
-          import glob
-          p = 'android/app/src/main/AndroidManifest.xml'
-          s = open(p).read()
-          if 'RECORD_AUDIO' not in s:
-              s = s.replace('<application', '<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application android:usesCleartextTraffic="true"', 1)
-          open(p, 'w').write(s)
-          for f in glob.glob('android/app/build.gradle*'):
-              t = open(f).read()
-              t = t.replace('minSdk = flutter.minSdkVersion', 'minSdk = 23').replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 23')
-              open(f, 'w').write(t)
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          if not p.exists():
+              raise SystemExit('AndroidManifest.xml still missing after flutter create')
+          text = p.read_text()
+          if 'android.permission.RECORD_AUDIO' not in text:
+              text = text.replace(
+                  '<application',
+                  '<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <application'
+              )
+          p.write_text(text)
           PY
+
       - name: Get packages
         script: flutter pub get
+
       - name: Build debug APK
         script: flutter build apk --debug
+
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
