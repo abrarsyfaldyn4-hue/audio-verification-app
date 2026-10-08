@@ -1,0 +1,36 @@
+workflows:
+  flutter-debug:
+    name: Flutter Debug APK
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Create android folder and patch manifest
+        script: |
+          mkdir -p /tmp/bak
+          cp -r lib /tmp/bak/lib
+          cp pubspec.yaml /tmp/bak/pubspec.yaml
+          rm -f .metadata
+          flutter create . --platforms=android --project-name audio_verification_app
+          cp -r /tmp/bak/lib/. lib/
+          cp /tmp/bak/pubspec.yaml pubspec.yaml
+          python3 - <<'PY'
+          import glob
+          p = 'android/app/src/main/AndroidManifest.xml'
+          s = open(p).read()
+          if 'RECORD_AUDIO' not in s:
+              s = s.replace('<application', '<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application android:usesCleartextTraffic="true"', 1)
+          open(p, 'w').write(s)
+          for f in glob.glob('android/app/build.gradle*'):
+              t = open(f).read()
+              t = t.replace('minSdk = flutter.minSdkVersion', 'minSdk = 23').replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 23')
+              open(f, 'w').write(t)
+          PY
+      - name: Get packages
+        script: flutter pub get
+      - name: Build debug APK
+        script: flutter build apk --debug
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
