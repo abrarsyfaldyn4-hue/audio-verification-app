@@ -1,21 +1,20 @@
 name: audio_verification_app
 description: A modern mobile app flow for IP validation, OTP verification, permission request, sound recording, and upload.
-
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.10.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^11.3.1
-  record: ^5.1.0
-  path_provider: ^2.1.6
-  http: ^1.3.0
-
   cupertino_icons: ^1.0.2
+  permission_handler: ^13.0.0
+  record: ^5.1.0
+  path_provider: ^2.1.1
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:

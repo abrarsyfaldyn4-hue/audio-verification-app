@@ -1,13 +1,13 @@
 workflows:
   flutter-debug:
     name: Flutter Debug APK
-    max_build_duration: 30
+    max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       java: 17
     scripts:
-      - name: Create android folder and patch manifest
+      - name: Ensure full Flutter project structure
         script: |
           mkdir -p /tmp/bak
           cp -r lib /tmp/bak/lib
@@ -30,7 +30,99 @@ workflows:
           PY
       - name: Get packages
         script: flutter pub get
+
       - name: Build debug APK
         script: flutter build apk --debug
+
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/flutter-apk/**/*.apk
+      - build/app/outputs/apk/**/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - $PERSONAL_EMAIL
+        notify:
+          success: true
+          failure: true
+
+  flutter-release:
+    name: Flutter Release APK
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Ensure full Flutter project structure
+        script: |
+          if [ ! -f pubspec.yaml ]; then
+            echo "ERROR: pubspec.yaml not found at project root"
+            exit 1
+          fi
+          
+          if [ ! -f android/settings.gradle ] || [ ! -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "Flutter Android project incomplete. Recreating..."
+            rm -rf android
+            flutter create . --platforms=android --org com.example
+          fi
+          
+          echo "Project structure verified"
+
+      - name: Install Flutter dependencies
+        script: flutter pub get
+
+      - name: Build release APK
+        script: flutter build apk --release
+
+    artifacts:
+      - build/app/outputs/flutter-apk/release/app-release.apk
+      - build/app/outputs/apk/release/app-release.apk
+
+    publishing:
+      email:
+        recipients:
+          - $PERSONAL_EMAIL
+        notify:
+          success: true
+          failure: true
+
+  flutter-aab:
+    name: Flutter App Bundle
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Ensure full Flutter project structure
+        script: |
+          if [ ! -f pubspec.yaml ]; then
+            echo "ERROR: pubspec.yaml not found at project root"
+            exit 1
+          fi
+          
+          if [ ! -f android/settings.gradle ] || [ ! -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "Flutter Android project incomplete. Recreating..."
+            rm -rf android
+            flutter create . --platforms=android --org com.example
+          fi
+          
+          echo "Project structure verified"
+
+      - name: Install Flutter dependencies
+        script: flutter pub get
+
+      - name: Build App Bundle
+        script: flutter build appbundle --release
+
+    artifacts:
+      - build/app/outputs/bundle/release/app-release.aab
+
+    publishing:
+      email:
+        recipients:
+          - $PERSONAL_EMAIL
+        notify:
+          success: true
+          failure: true
